@@ -8,6 +8,21 @@ local function getFilter(id)
     return filter[id]
 end
 
+local function doSendQuickLootNearbyTiles () 
+    g_game.sendQuickLoot(2)
+end
+
+local function doSendQuickLootOneTile() 
+    local mousePos = modules.game_interface.getMapPanel():getTile( g_window.getMousePosition()):getPosition()
+    local tile = g_map.getTile(mousePos)
+    if tile then
+        local topItem = tile:getTopUseThing()
+        if topItem and topItem:isItem() then
+            g_game.sendQuickLoot(1,topItem )
+        end
+    end
+end
+
 quickLootController = Controller:new()
 quickLootController:setUI('quickloot')
 function quickLootController:onInit()
@@ -31,14 +46,23 @@ function quickLootController:onInit()
     Keybind.bind("Loot", "Quick Loot Nearby Corpses", {
       {
         type = KEY_DOWN,
-        callback = function() g_game.sendQuickLoot(2) end,
+        callback = doSendQuickLootNearbyTiles 
       }
     })
+    Keybind.new("Loot", "Quick Loot in mouse position", "Alt+W", "")
+    Keybind.bind("Loot", "Quick Loot in mouse position", {
+      {
+        type = KEY_DOWN,
+        callback = doSendQuickLootOneTile
+      }
+    })
+
 
 end
 
 function quickLootController:onTerminate()
     Keybind.delete("Loot", "Quick Loot Nearby Corpses")
+    Keybind.delete("Loot", "Quick Loot in mouse position")
     if QuickLoot.mouseGrabberWidget then
         QuickLoot.mouseGrabberWidget:destroy()
         QuickLoot.mouseGrabberWidget = nil
